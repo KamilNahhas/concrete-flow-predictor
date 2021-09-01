@@ -1,3 +1,5 @@
+from GradientDescent import LinearRegression
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -41,7 +43,7 @@ if method == 1:
 
     # Make predictions using the testing set
     flow_y_pred = regr.predict(flow_X_test)
-    beta = regr.coef_
+    print(flow_y_pred.shape)
 
     # The coefficients
     print('Coefficients: \n', regr.coef_)
@@ -57,8 +59,9 @@ else:
     # LINEAR REGRESSION BY HAND #
     # # # # # # # # # # # # # # #
 
-    beta = np.dot(np.dot(np.linalg.inv(np.dot(flow_X_train.T, flow_X_train)), flow_X_train.T), flow_y_train)
-    flow_y_pred = np.dot(flow_X_test, beta)
+    model = LinearRegression()
+    model.fit(flow_X_train, flow_y_train)
+    flow_y_pred = model.predict(flow_X_test)
 
     SSE = np.square(np.subtract(flow_y_test, flow_y_pred)).sum()
     SST = np.square(np.subtract(flow_y_test, flow_y_test.mean())).sum()
@@ -66,14 +69,15 @@ else:
     r2 = 1 - SSE / SST
 
     # The coefficients
-    beta = beta.T
-    print('Coefficients: \n', beta)
+    print('Coefficients: \n', model.weights)
     # The mean squared error
     print('Mean squared error: %.2f'
           % MSE)
+    # print(model.loss[-1:])
     # The coefficient of determination: 1 is perfect prediction
     print('Coefficient of determination: %.2f'
           % r2)
+
 
 print("\n")
 print("Now it is time to predict the flow of concrete!\n")
@@ -81,12 +85,22 @@ print("Input the data separated by commas and in order of")
 print("Cement, Slag, Fly ash, Water, SP, Coarse Aggr., Fine Aggr.")
 print("Remember that this data is expressed in component kg in one m^3 of concrete\n")
 
+# Plot outputs
+x_axis = np.linspace(0, flow_y_test.shape[0], num=flow_y_test.shape[0])
+plt.scatter(x_axis, flow_y_test,  color='black')
+plt.scatter(x_axis, flow_y_pred, color='blue')
+plt.xticks(())
+# plt.yticks(())
+plt.show()
+
+
 cycle = 1
 while cycle == 1:
     flow_X_input = np.array([list(map(float, input("Input: ").split(',')))])
-    flow_y_input_pred = np.dot(flow_X_input, beta.T)
+    if method == 1:
+        flow_y_input_pred = regr.predict(flow_X_input)
+    else:
+        flow_y_input_pred = model.predict(flow_X_input)
     print('Prediction: %.2f'
           % flow_y_input_pred)
     cycle = int(input("Would you like to make another prediction (0 = No, 1 = Yes): "))
-
-
